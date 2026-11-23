@@ -13,6 +13,15 @@ for d in ("seg", "layers", "stills", "out", "audio"):
 CREAM = (247, 239, 227); TRAV = (217, 195, 165); GOLD = (233, 168, 76); TERRA = (138, 74, 43)
 TEAL = (31, 111, 120); TWI = (35, 51, 92); LANTERN = (244, 194, 107); ESP = (59, 42, 34)
 BASIL = (46, 125, 79); ROSSO = (200, 55, 45)
+CLAY = (200, 121, 74); LAGOON = (127, 183, 178); MAT = (255, 251, 244)
+GROUNDS = {"teal": TEAL, "terracotta": TERRA, "golden": GOLD, "clay": CLAY, "travertine": TRAV, "lagoon": LAGOON, "twilight": TWI, "cream": CREAM}
+CARDS = {"twilight": (TWI, LANTERN), "teal": (TEAL, LANTERN), "terracotta": (TERRA, GOLD), "espresso": (ESP, GOLD)}
+ENDS = {
+    "cream": dict(bg=CREAM, ring=CLAY, quote=TEAL, kicker=TERRA, sub=(110, 90, 76)),
+    "twilight": dict(bg=TWI, ring=LANTERN, quote=CREAM, kicker=LANTERN, sub=(214, 204, 188)),
+    "terracotta": dict(bg=TERRA, ring=GOLD, quote=CREAM, kicker=CREAM, sub=(240, 222, 200)),
+    "teal": dict(bg=TEAL, ring=LANTERN, quote=CREAM, kicker=CREAM, sub=(220, 236, 232)),
+}
 
 def font(kind, size, wght):
     path = {"serif_i": "fonts/CormorantGaramond-Italic[wght].ttf",
@@ -108,16 +117,17 @@ def draw_centered(d, lines, f, cy, fill, lh=1.12, shadow=None):
         y += lh * size
     return cy - total / 2, cy + total / 2
 
-def endcard_seg(out, src, look, dur, quote, kicker="BETTY WHITEMAN", sub=None):
+def endcard_seg(out, src, look, dur, quote, kicker="BETTY WHITEMAN", sub=None, theme="cream"):
+    T = ENDS[theme]
     img = graded_still(src, look)
     aw, ah = 620, 820
     mask = arch_mask(aw, ah)
-    bg = Image.new("RGB", (W, H), CREAM)
+    bg = Image.new("RGB", (W, H), T["bg"])
     d = ImageDraw.Draw(bg)
     ax, ay = (W - aw) // 2, 250
     # fine rule frame around arch
     fr = arch_mask(aw + 28, ah + 28)
-    ring = Image.new("RGB", fr.size, (200, 121, 74))
+    ring = Image.new("RGB", fr.size, T["ring"])
     inner = arch_mask(aw + 24, ah + 24)
     ringmask = Image.fromarray(np.clip(np.array(fr, dtype=int) - np.pad(np.array(inner, dtype=int), 2), 0, 255).astype("uint8"))
     bg.paste(ring, (ax - 14, ay - 14), ringmask)
@@ -125,9 +135,10 @@ def endcard_seg(out, src, look, dur, quote, kicker="BETTY WHITEMAN", sub=None):
     ry = ay + ah + 60
     for i, col in enumerate((BASIL, CREAM, ROSSO)):
         d.rectangle([W / 2 - 54 + i * 36, ry, W / 2 - 54 + (i + 1) * 36, ry + 4], fill=col)
-    d.rectangle([W / 2 - 18, ry, W / 2 + 18, ry + 4], outline=(205, 183, 151))
+    if T["bg"] == CREAM:
+        d.rectangle([W / 2 - 18, ry, W / 2 + 18, ry + 4], outline=(205, 183, 151))
     fq, lines, _ = wrap_fit(quote, "serif_i", 74, 500, 900)
-    top, bot = draw_centered(d, lines, fq, ry + 60 + 0.56 * 74 * len(lines) * 1.12, TEAL, lh=1.14)
+    top, bot = draw_centered(d, lines, fq, ry + 60 + 0.56 * 74 * len(lines) * 1.12, T["quote"], lh=1.14)
     fk = font("sans", 28, 500)
     k = kicker
     # tracked caps
@@ -141,10 +152,10 @@ def endcard_seg(out, src, look, dur, quote, kicker="BETTY WHITEMAN", sub=None):
     if sub:
         sl = sub.split("\n")
         for li, line in enumerate(sl):
-            tracked(line, bot + 44 + li * 40, font("sans", 24, 400), (110, 90, 76), 0.22)
-        tracked(k, bot + 60 + len(sl) * 40 + 16, fk, TERRA)
+            tracked(line, bot + 44 + li * 40, font("sans", 24, 400), T["sub"], 0.22)
+        tracked(k, bot + 60 + len(sl) * 40 + 16, fk, T["kicker"])
     else:
-        tracked(k, bot + 56, fk, TERRA)
+        tracked(k, bot + 56, fk, T["kicker"])
     iw, ih = img.size
     n = int(round(dur * FPS))
     base = max(aw / iw, ah / ih)
@@ -162,6 +173,34 @@ def video_seg(out, clip, a, b, look, speed="rt"):
     master = P("masters", f"{clip}_{'slow3' if speed == 'slow' else 'rt'}.mp4")
     run(["ffmpeg", "-v", "error", "-y", "-ss", str(a), "-i", master, "-t", str(b - a), "-an",
          "-vf", f"{GRADES[look]},setpts=PTS-STARTPTS,fps={FPS},format=yuv420p",
+         "-c:v", "libx264", "-crf", "16", "-preset", "fast", out])
+
+def frame_bg(path, ground, label):
+    g = GROUNDS[ground]
+    bg = Image.new("RGB", (W, H), g)
+    sh = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(sh).rectangle([132, 322, 972, 1568], fill=120)
+    sh = sh.filter(ImageFilter.GaussianBlur(22))
+    bg.paste(Image.new("RGB", (W, H), (30, 20, 15)), (0, 0), sh)
+    d = ImageDraw.Draw(bg)
+    d.rectangle([120, 300, 960, 1540], fill=MAT)
+    f = font("sans", 26, 500)
+    sp = 26 * 0.34
+    widths = [f.getlength(c) for c in label]
+    tot = sum(widths) + sp * (len(label) - 1)
+    x = (W - tot) / 2
+    for c, w in zip(label, widths):
+        d.text((x, 1468), c, font=f, fill=TERRA); x += w + sp
+    for i, col in enumerate((BASIL, MAT, ROSSO)):
+        d.rectangle([W / 2 - 36 + i * 24, 1512, W / 2 - 36 + (i + 1) * 24, 1515], fill=col)
+    d.rectangle([W / 2 - 12, 1512, W / 2 + 12, 1515], outline=(205, 183, 151))
+    bg.save(path)
+
+def frame_seg(out, inner_file, ground, label):
+    bgp = out.replace(".mp4", "_bg.png")
+    frame_bg(bgp, ground, label)
+    run(["ffmpeg", "-v", "error", "-y", "-loop", "1", "-i", bgp, "-i", inner_file, "-filter_complex",
+         "[1:v]scale=760:1351,crop=760:1100,setsar=1[v];[0:v][v]overlay=160:340:shortest=1,fps=30,format=yuv420p",
          "-c:v", "libx264", "-crf", "16", "-preset", "fast", out])
 
 # ---------- text layers ----------
@@ -192,7 +231,8 @@ def layer_hook(out, kicker, text):
     d.rectangle([W / 2 - 40, bot + 34, W / 2 + 40, bot + 36], fill=LANTERN + (255,))
     im.save(out)
 
-def layer_card(out, text, small=None, cy=1290):
+def layer_card(out, text, small=None, cy=1290, style="twilight"):
+    PANEL, RULE = CARDS[style]
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     f, lines, size = wrap_fit(text, "serif_i", 70, 500, 840)
     lh = 1.12
@@ -201,8 +241,8 @@ def layer_card(out, text, small=None, cy=1290):
     x0, y0 = (W - pw) / 2, cy - ph / 2
     panel = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     pd = ImageDraw.Draw(panel)
-    pd.rectangle([x0, y0, x0 + pw, y0 + ph], fill=TWI + (225,))
-    pd.rectangle([x0, y0, x0 + pw, y0 + 2], fill=LANTERN + (255,))
+    pd.rectangle([x0, y0, x0 + pw, y0 + ph], fill=PANEL + (232,))
+    pd.rectangle([x0, y0, x0 + pw, y0 + 3], fill=RULE + (255,))
     im = Image.alpha_composite(im, panel)
     d = ImageDraw.Draw(im)
     draw_centered(d, lines, f, y0 + 42 + lh * size * len(lines) / 2 + 6, CREAM + (255,), lh=lh)
@@ -225,7 +265,10 @@ def layer_place(out, name):
     for c, w in zip(name, widths):
         gd.text((xx, y + 2), c, font=f, fill=(0, 0, 0, 210)); xx += w + sp
     glow = glow.filter(ImageFilter.GaussianBlur(6))
-    im = Image.alpha_composite(im, glow); d = ImageDraw.Draw(im)
+    im = Image.alpha_composite(im, glow)
+    pill = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(pill).rounded_rectangle([(W - tot) / 2 - 34, y - 22, (W + tot) / 2 + 34, y + 76], radius=8, fill=TWI + (215,))
+    im = Image.alpha_composite(im, pill); d = ImageDraw.Draw(im)
     for c, w in zip(name, widths):
         d.text((x, y), c, font=f, fill=CREAM + (255,)); x += w + sp
     d.rectangle([W / 2 - 30, y + 58, W / 2 + 30, y + 60], fill=LANTERN + (255,))
@@ -300,8 +343,17 @@ def build(job):
             photo_seg(f, s["src"], s["look"], s["dur"], s.get("z0", 1.0), s.get("z1", 1.08),
                       tuple(s.get("c0", (0.5, 0.5))), tuple(s.get("c1", (0.5, 0.5))))
             durs.append(s["dur"])
+        elif s["t"] == "frame":
+            inn = s["inner"]; tmp = P("seg", f"{vid}_{i:02d}_inner.mp4")
+            if inn["t"] == "video":
+                video_seg(tmp, inn["clip"], inn["a"], inn["b"], inn["look"], inn.get("speed", "rt"))
+            else:
+                photo_seg(tmp, inn["src"], inn["look"], inn["dur"], inn.get("z0", 1.0), inn.get("z1", 1.08),
+                          tuple(inn.get("c0", (0.5, 0.5))), tuple(inn.get("c1", (0.5, 0.5))))
+            frame_seg(f, tmp, s["ground"], s["label"])
+            durs.append(0)
         elif s["t"] == "end":
-            endcard_seg(f, s["src"], s["look"], s["dur"], s["quote"], sub=s.get("sub"))
+            endcard_seg(f, s["src"], s["look"], s["dur"], s["quote"], sub=s.get("sub"), theme=s.get("theme", job.get("end", "cream")))
             durs.append(s["dur"])
         segfiles.append(f)
     durs = [float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f],
@@ -319,7 +371,7 @@ def build(job):
         if c.get("place"):
             layer_place(f, c["text"])
         else:
-            layer_card(f, c["text"], c.get("small"))
+            layer_card(f, c["text"], c.get("small"), style=c.get("style", job.get("card", "twilight")))
         si = c["seg"]
         a = starts[si] + c.get("da", 0.35) + (0 if si == 0 else XF * 0.5)
         b = starts[si] + durs[si] - c.get("db", 0.3) - (0 if si == len(durs) - 1 else XF * 0.5)
