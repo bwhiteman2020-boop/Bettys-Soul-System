@@ -371,7 +371,7 @@ def build(job):
         if c.get("place"):
             layer_place(f, c["text"])
         else:
-            layer_card(f, c["text"], c.get("small"), style=c.get("style", job.get("card", "twilight")))
+            layer_card(f, c["text"], c.get("small"), cy=c.get("cy", 1290), style=c.get("style", job.get("card", "twilight")))
         si = c["seg"]
         a = starts[si] + c.get("da", 0.35) + (0 if si == 0 else XF * 0.5)
         b = starts[si] + durs[si] - c.get("db", 0.3) - (0 if si == len(durs) - 1 else XF * 0.5)
