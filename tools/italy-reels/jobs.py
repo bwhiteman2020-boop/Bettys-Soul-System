@@ -68,6 +68,19 @@ jobs = [
   "segs":[Ph("2",TR,5.4,c0=(.25,.5),c1=(.45,.5),z0=1.0,z1=1.1), Ph("2",TR,4.6,c0=(.78,.48),c1=(.62,.5),z0=1.12,z1=1.0), F(Ph("5",TR,4.4,c0=(.5,.45),c1=(.5,.36)),"travertine","POMPEII"), E("2",TR,"This too is temporary.\nYou are not stuck.")],
   "cards":[{"seg":1,"text":"They weren't."},{"seg":2,"text":"Neither are yours."}]},
 ]
+jobs.append({"id":"A01-adventure","title":"Italia, Come With Me","kind":"Adventure montage · natural sound + music","sound":"natural","music":"passeggiata","bed":0.32,"card":"teal","end":"twilight",
+  "kicker":"ITALIA · NOVEMBER 2026","hook":"This is what it\nlooks like when\nyou finally go.",
+  "segs":[Ph("10",CA,4.2,c0=(.34,.5),c1=(.5,.5),nat=["venice","amb"]), V("venice",0.0,1.9,CA,"rt",nat=["venice","sync"]),
+          F(Ph("6",CA,3.6,z0=1.0,z1=1.1),"twilight","VENEZIA · TORRE DELL'OROLOGIO",nat=["venice","amb",0.8]),
+          Ph("8",TR,3.2,c0=(.45,.35),c1=(.5,.5),z0=1.08,z1=1.0,nat=["venice","amb",0.8]),
+          Ph("7",TR,3.6,c0=(.6,.45),c1=(.6,.45),z0=1.0,z1=1.08,nat=["venice","amb",0.8]),
+          Ph("9",CA,3.0,c0=(.55,.62),c1=(.55,.45),z0=1.18,z1=1.18,nat=["venice","amb",0.8]),
+          V("rome",0.0,3.9,TR,"rt",nat=["rome","sync"]), V("rome",4.0,8.2,TR,"rt",nat=["rome","sync"]),
+          F(V("rome",18.0,22.5,TR),"clay","ROMA · VIA DEI FORI IMPERIALI",nat=["rome","amb"]),
+          Ph("2",TR,4.0,**P2a,nat=["rome","amb",0.5]), F(Ph("1",TR,3.6,**P1),"travertine","POMPEII · CAMPANIA",nat=["rome","amb",0.4]),
+          Ph("5",TR,3.2,c0=(.5,.45),c1=(.5,.35),nat=["rome","amb",0.4]), F(Ph("4",TR,3.4,**P4),"golden","POMPEII",nat=["rome","amb",0.4]),
+          E("10",CA,"The trip you keep\npostponing is\nwaiting for you.",dur=5.0,sub="VENICE · FLORENCE · TUSCANY · ASSISI\nROME · THE VATICAN · POMPEII")],
+  "cards":[{"seg":1,"text":"VENEZIA","place":True,"a":3.75},{"seg":6,"text":"ROMA","place":True},{"seg":9,"text":"POMPEII","place":True}]})
 for j in jobs:
     for c in j.get("cards", []):
         if c.get("b", 0) is None: del c["b"]

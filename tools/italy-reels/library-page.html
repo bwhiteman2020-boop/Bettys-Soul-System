@@ -1,0 +1,225 @@
+<meta name="dash-one-writer">
+<style>
+.ivl { --ivl-teal: #1F6F78; --ivl-terra: #8A4A2B; --ivl-gold: #E9A84C; --ivl-twilight: #23335C; --ivl-clay: #C8794A;
+  display: flex; flex-direction: column; gap: var(--cds-gap-xl); color: var(--color-fg); font-family: var(--font-anthropic-sans); }
+.ivl-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); max-width: 62rem; }
+.ivl-kicker { margin: 0; font-size: var(--cds-font-size-caption); letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-fg-muted); }
+.ivl-title { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-style: italic; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; text-wrap: balance; }
+.ivl-lede { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.55; color: var(--color-fg-muted); max-width: 46rem; }
+.ivl-lede b { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.ivl-tricolore { display: flex; width: 54px; height: 3px; }
+.ivl-tricolore span { flex: 1; }
+.ivl-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); }
+.ivl-tab { appearance: none; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg); font: inherit; font-size: var(--cds-font-size-body); cursor: pointer; }
+.ivl-tab:hover { border-color: var(--color-fg-muted); }
+.ivl-tab:focus-visible { outline: 2px solid var(--ivl-teal); outline-offset: 2px; }
+.ivl-tab.is-on { background: var(--ivl-teal); border-color: var(--ivl-teal); color: #F7EFE3; }
+.ivl-count { font-variant-numeric: tabular-nums; font-size: var(--cds-font-size-caption); opacity: 0.8; }
+.ivl-section { display: flex; flex-direction: column; gap: var(--cds-gap-md); padding-top: var(--cds-pad-md); border-top: 1px solid var(--color-border-line); }
+.ivl-sec-head { display: flex; flex-direction: column; gap: 4px; }
+.ivl-sec-head h2 { margin: 0; font-family: var(--font-anthropic-serif); font-weight: 400; font-style: italic; font-size: var(--cds-font-size-title); display: flex; align-items: center; gap: 10px; }
+.ivl-sec-head h2::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--ivl-dot, var(--ivl-teal)); flex: none; }
+.ivl-sec-head p { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); line-height: 1.5; max-width: 46rem; }
+#reels { --ivl-dot: var(--ivl-teal); } #adventure { --ivl-dot: var(--ivl-clay); } #broll { --ivl-dot: var(--ivl-gold); }
+#behind-the-scenes { --ivl-dot: var(--ivl-terra); } #talking-head { --ivl-dot: var(--ivl-twilight); } #music { --ivl-dot: var(--ivl-terra); }
+.ivl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: var(--cds-gap-lg) var(--cds-gap-md); }
+.ivl-grid.is-audio { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.ivl-card { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ivl-media { width: 100%; aspect-ratio: 9 / 16; max-width: 100%; display: block; background: #3B2A22; border-radius: var(--cds-radius); object-fit: cover; }
+.ivl-audio-card { padding: var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); }
+.ivl-audio { width: 100%; }
+.ivl-card-title { margin: 0; font-family: var(--font-anthropic-serif); font-size: 1.15rem; line-height: 1.2; }
+.ivl-meta { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: 0.04em; }
+.ivl-meta span { font-variant-numeric: tabular-nums; }
+.ivl-hook { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.45; font-style: italic; color: var(--color-fg); overflow-wrap: anywhere; }
+.ivl-chip { display: inline-block; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--color-border-line); font-size: var(--cds-font-size-caption); }
+.ivl-empty { margin: 0; padding: var(--cds-pad-lg); border: 1px dashed var(--color-border-line); border-radius: var(--cds-radius); color: var(--color-fg-muted); line-height: 1.55; max-width: 46rem; }
+.ivl-fail { margin: 0; color: var(--color-bad); }
+</style>
+
+<div class="ivl" id="library">
+  <header class="ivl-head" id="library-head">
+    <p class="ivl-kicker">Dolce Vista · Venezia · Roma · Pompeii</p>
+    <h1 class="ivl-title">Italy Video Library</h1>
+    <div class="ivl-tricolore" aria-hidden="true"><span style="background:#2E7D4F"></span><span style="background:#F7EFE3;box-shadow:inset 0 0 0 1px #CDB797"></span><span style="background:#C8372D"></span></div>
+    <p class="ivl-lede">Every video edited from the November 2026 trip, <b data-draw="total" data-source="library_total">—</b> so far, sorted by kind. They are made from 2 clips and 10 photos from Venice, Rome and Pompeii. Florence, Tuscany, Assisi and the Vatican arrive with the full footage on your Mac.</p>
+  </header>
+
+  <nav class="ivl-tabs" id="library-tabs" aria-label="Video kinds">
+    <button type="button" class="ivl-tab is-on" data-tab="all">All</button>
+    <button type="button" class="ivl-tab" data-tab="reels">Reels <span class="ivl-count" data-draw="n-reels" data-source="library_counts" data-field="videos" data-where="kind=Reels">—</span></button>
+    <button type="button" class="ivl-tab" data-tab="adventure">Adventure <span class="ivl-count" data-draw="n-adventure" data-source="library_counts" data-field="videos" data-where="kind=Adventure">—</span></button>
+    <button type="button" class="ivl-tab" data-tab="broll">B-roll <span class="ivl-count" data-draw="n-broll" data-source="library_counts" data-field="videos" data-where="kind=B-roll">—</span></button>
+    <button type="button" class="ivl-tab" data-tab="behind-the-scenes">Behind the scenes <span class="ivl-count" data-draw="n-bts" data-source="library_counts" data-field="videos" data-where="kind=Behind the Scenes">—</span></button>
+    <button type="button" class="ivl-tab" data-tab="talking-head">Talking head <span class="ivl-count" data-draw="n-talking" data-source="library_counts" data-field="videos" data-where="kind=Talking Head">—</span></button>
+    <button type="button" class="ivl-tab" data-tab="music">Music <span class="ivl-count" data-draw="n-music" data-source="library_counts" data-field="videos" data-where="kind=Music">—</span></button>
+  </nav>
+
+  <section class="ivl-section" id="reels" data-kind="Reels">
+    <div class="ivl-sec-head"><h2>Reels</h2><p>Finished 9:16 reels with a hook, message cards and an end card, ready to post.</p></div>
+    <p class="ivl-empty" data-empty="Reels" hidden>No reels yet.</p>
+    <div class="ivl-grid" data-draw="grid-reels" data-source="videos"></div>
+  </section>
+
+  <section class="ivl-section" id="adventure" data-kind="Adventure">
+    <div class="ivl-sec-head"><h2>Adventure</h2><p>Longer travel montages that move place to place with real sound and music.</p></div>
+    <p class="ivl-empty" data-empty="Adventure" hidden>No adventure montages yet.</p>
+    <div class="ivl-grid" data-draw="grid-adventure" data-source="videos"></div>
+  </section>
+
+  <section class="ivl-section" id="broll" data-kind="B-roll">
+    <div class="ivl-sec-head"><h2>B-roll</h2><p>Clean graded shots with no text, to drop under your own voice, captions or posts. Video shots keep their real sound where noted; photo shots are silent.</p></div>
+    <p class="ivl-empty" data-empty="B-roll" hidden>No B-roll yet.</p>
+    <div class="ivl-grid" data-draw="grid-broll" data-source="videos"></div>
+  </section>
+
+  <section class="ivl-section" id="behind-the-scenes" data-kind="Behind the Scenes">
+    <div class="ivl-sec-head"><h2>Behind the scenes</h2><p>Candid moments of you on the move: packing, walking, laughing, getting lost.</p></div>
+    <p class="ivl-empty" data-empty="Behind the Scenes">Nothing here yet. The clips that hold these moments are in the Italy Videos folder on your Mac, and they land here once that footage is edited.</p>
+    <div class="ivl-grid" data-draw="grid-bts" data-source="videos"></div>
+  </section>
+
+  <section class="ivl-section" id="talking-head" data-kind="Talking Head">
+    <div class="ivl-sec-head"><h2>Talking head</h2><p>You speaking to camera, with captions taken from your own words.</p></div>
+    <p class="ivl-empty" data-empty="Talking Head">Nothing here yet. None of the footage edited so far shows you speaking. Any clips of you talking on your Mac become talking-head videos here, captioned word for word.</p>
+    <div class="ivl-grid" data-draw="grid-talking" data-source="videos"></div>
+  </section>
+
+  <section class="ivl-section" id="music" data-kind="Music">
+    <div class="ivl-sec-head"><h2>Music</h2><p>Original instrumentals composed for these videos. They are yours and royalty-free to post.</p></div>
+    <p class="ivl-empty" data-empty="Music" hidden>No music yet.</p>
+    <div class="ivl-grid" data-draw="grid-music" data-source="videos"></div>
+  </section>
+</div>
+
+<script>
+const IVL_KINDS = ['Reels', 'Adventure', 'B-roll', 'Behind the Scenes', 'Talking Head', 'Music'];
+
+dash.calc('library_counts', {
+  inputs: ['videos'],
+  title: 'Pieces by kind',
+  description: 'How many library entries there are of each kind.',
+  fn: (videos) => IVL_KINDS.map((kind) => ({ kind, videos: videos.filter((v) => v.kind === kind).length }))
+});
+
+dash.calc('library_total', {
+  inputs: ['videos'],
+  title: 'Videos in the library',
+  description: 'All entries except the music tracks.',
+  fn: (videos) => videos.filter((v) => v.kind !== 'Music').length
+});
+
+window.ivlBlob = (u) => (typeof u === 'string' && /^\/_blob\/[0-9a-f]{32}$/.test(u)) ? u : null;
+window.ivlDur = (s) => {
+  const n = Number(s);
+  return Number.isFinite(n) ? n.toFixed(1) + ' s' : '';
+};
+
+window.ivlCard = (r) => {
+  const fig = document.createElement('figure');
+  fig.className = 'ivl-card';
+  const src = window.ivlBlob(r.src);
+  if (r.media === 'audio') {
+    fig.classList.add('ivl-audio-card');
+  }
+  const title = document.createElement('p');
+  title.className = 'ivl-card-title';
+  title.dataset.source = 'videos'; title.dataset.field = 'title'; title.dataset.where = 'id=' + encodeURIComponent(r.id);
+  title.textContent = r.title;
+  if (r.media === 'audio') {
+    fig.append(title);
+    if (src) {
+      const a = document.createElement('audio');
+      a.className = 'ivl-audio'; a.controls = true; a.preload = 'none'; a.src = src;
+      a.setAttribute('aria-label', r.title);
+      fig.append(a);
+    }
+  } else {
+    if (src) {
+      const v = document.createElement('video');
+      v.className = 'ivl-media'; v.controls = true; v.preload = 'none'; v.playsInline = true; v.src = src;
+      const poster = window.ivlBlob(r.poster);
+      if (poster) v.poster = poster;
+      v.setAttribute('aria-label', r.title);
+      fig.append(v);
+    }
+    fig.append(title);
+  }
+  const meta = document.createElement('p');
+  meta.className = 'ivl-meta';
+  const place = document.createElement('span');
+  place.dataset.source = 'videos'; place.dataset.field = 'place'; place.dataset.where = 'id=' + encodeURIComponent(r.id);
+  place.textContent = r.place;
+  const dur = document.createElement('span');
+  dur.dataset.source = 'videos'; dur.dataset.field = 'duration_s'; dur.dataset.where = 'id=' + encodeURIComponent(r.id);
+  dur.textContent = window.ivlDur(r.duration_s);
+  const sound = document.createElement('span');
+  sound.className = 'ivl-chip';
+  sound.dataset.source = 'videos'; sound.dataset.field = 'sound'; sound.dataset.where = 'id=' + encodeURIComponent(r.id);
+  sound.textContent = r.sound;
+  meta.append(place, dur, sound);
+  fig.append(meta);
+  if (r.hook) {
+    const hook = document.createElement('p');
+    hook.className = 'ivl-hook';
+    hook.dataset.source = 'videos'; hook.dataset.field = 'hook'; hook.dataset.where = 'id=' + encodeURIComponent(r.id);
+    hook.textContent = r.hook;
+    fig.append(hook);
+  }
+  return fig;
+};
+
+[['grid-reels', 'Reels'], ['grid-adventure', 'Adventure'], ['grid-broll', 'B-roll'], ['grid-bts', 'Behind the Scenes'], ['grid-talking', 'Talking Head'], ['grid-music', 'Music']].forEach(([name, kind]) => {
+  dash.draw(name, (el) => {
+    const d = dash.data('videos');
+    if (d.status === 'error') {
+      const p = document.createElement('p'); p.className = 'ivl-fail'; p.textContent = 'These videos could not be loaded. Refresh the page to try again.';
+      el.replaceChildren(p);
+      return;
+    }
+    if (d.status !== 'ok') { el.replaceChildren(); return; }
+    el.replaceChildren(...d.data.filter((r) => r.kind === kind).map(window.ivlCard));
+  });
+});
+
+[['n-reels', 'Reels'], ['n-adventure', 'Adventure'], ['n-broll', 'B-roll'], ['n-bts', 'Behind the Scenes'], ['n-talking', 'Talking Head'], ['n-music', 'Music']].forEach(([name, kind]) => {
+  dash.draw(name, (el) => {
+    const c = dash.data('library_counts');
+    if (c.status !== 'ok' || !Array.isArray(c.data)) { el.textContent = '—'; return; }
+    const row = c.data.find((x) => x.kind === kind);
+    el.textContent = row ? String(row.videos) : '0';
+  });
+});
+
+dash.draw('total', (el) => {
+  const t = dash.data('library_total');
+  el.textContent = (t.status === 'ok' && t.data != null) ? String(t.data) + (t.data === 1 ? ' video' : ' videos') : '—';
+});
+
+dash.onData(() => {
+  const d = dash.data('videos');
+  if (d.status !== 'ok') return;
+  document.querySelectorAll('#library [data-empty]').forEach((p) => {
+    p.hidden = d.data.some((r) => r.kind === p.dataset.empty);
+  });
+});
+
+(function () {
+  const tabs = document.querySelectorAll('#library-tabs [data-tab]');
+  const sections = document.querySelectorAll('#library .ivl-section');
+  const show = (tab) => {
+    const ok = Array.from(tabs).some((b) => b.dataset.tab === tab) ? tab : 'all';
+    tabs.forEach((b) => {
+      const on = b.dataset.tab === ok;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    sections.forEach((s) => { s.hidden = !(ok === 'all' || s.id === ok); });
+    if (ok !== 'all') dash.setLink(ok);
+  };
+  tabs.forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
+  const h = (location.hash || '').replace('#', '');
+  if (h) show(h);
+})();
+</script>
