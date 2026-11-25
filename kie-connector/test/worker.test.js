@@ -51,18 +51,33 @@ test("notification gets 202", async () => {
   assert.equal(res.status, 202);
 });
 
-test("create_image sends nano banana pro with references and bearer key", async () => {
+test("create_image defaults to nano banana 2, 9:16, 1K with references and bearer key", async () => {
   const { out } = await call("create_image", { prompt: "a detective at her desk", reference_image_urls: ["https://r/1.jpg"] });
   assert.equal(out.task_id, "task_123");
   assert.equal(calls[0].init.headers.Authorization, "Bearer fake-key");
   assert.deepEqual(calls[0].body, {
-    model: "nano-banana-pro",
-    input: { prompt: "a detective at her desk", image_input: ["https://r/1.jpg"], aspect_ratio: "9:16", resolution: "2K", output_format: "png" },
+    model: "nano-banana-2",
+    input: { prompt: "a detective at her desk", image_input: ["https://r/1.jpg"], aspect_ratio: "9:16", resolution: "1K", output_format: "png" },
   });
 });
 
-test("create_video kling 2.6 uses image_urls array", async () => {
+test("create_video defaults to kling 2.1 standard, 5 seconds", async () => {
   await call("create_video", { prompt: "she looks up slowly", image_url: "https://r/frame.png" });
+  assert.deepEqual(calls[0].body, {
+    model: "kling/v2-1-standard",
+    input: { prompt: "she looks up slowly", image_url: "https://r/frame.png", duration: "5" },
+  });
+});
+
+test("create_task_advanced refuses clips over 17 seconds", async () => {
+  const { raw, out } = await call("create_task_advanced", { model: "x/video", input: { prompt: "p", duration: "20" } });
+  assert.equal(raw.isError, true);
+  assert.match(out, /17 seconds/);
+  assert.equal(calls.length, 0);
+});
+
+test("create_video kling 2.6 uses image_urls array", async () => {
+  await call("create_video", { prompt: "she looks up slowly", image_url: "https://r/frame.png", model: "kling-2.6/image-to-video" });
   assert.deepEqual(calls[0].body, {
     model: "kling-2.6/image-to-video",
     input: { prompt: "she looks up slowly", image_urls: ["https://r/frame.png"], duration: "5", sound: false },

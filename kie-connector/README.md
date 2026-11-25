@@ -8,12 +8,14 @@ A small private connector that lets Claude make images and videos with your Kie.
 
 | Tool | What it does | Costs credits? |
 |---|---|---|
-| `create_image` | Makes an image. Can use your reference photos to keep faces and places consistent. Nano Banana Pro (default), Nano Banana 2, or Seedream edit. | Yes |
-| `create_video` | Turns a still image into a short video. Kling 2.6 (default), Kling 2.1 Standard, or Google Veo 3.1. | Yes, more than images |
+| `create_image` | Makes an image. Can use your reference photos to keep faces and places consistent. Nano Banana 2 (default, cheapest good result), Nano Banana Pro, or Seedream edit. | Yes |
+| `create_video` | Turns a still image into a short video. Kling 2.1 Standard (default, 720p, fewest credits), Kling 2.6, or Google Veo 3.1. | Yes, more than images |
 | `check_task` | Checks whether a shot is done and gives the link. | No |
 | `upload_reference_image` | Puts a reference photo where Kie.ai can see it (lasts 24 hours). | No |
 | `get_credits` | Shows your Kie.ai balance. | No |
 | `create_task_advanced` | Any other Kie.ai model, using the exact settings from docs.kie.ai. | Yes |
+
+**Micro drama defaults:** 9:16, 720p (1K for images), 5-second clips, no audio, cheapest good model. No clip can be longer than 17 seconds.
 
 Kie.ai deletes finished images and videos after 14 days, so save the ones you keep to Google Drive.
 
