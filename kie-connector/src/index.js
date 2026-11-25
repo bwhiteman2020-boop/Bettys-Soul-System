@@ -10,6 +10,7 @@ const SUPPORTED_PROTOCOLS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 const SERVER_INFO = { name: "betty-kie-ai", version: "1.0.0" };
 
 const IMAGE_MODELS = ["nano-banana-pro", "nano-banana-2", "bytedance/seedream-v4-edit"];
+const MAX_CLIP_SECONDS = 17;
 const VIDEO_MODELS = ["kling-2.6/image-to-video", "kling/v2-1-standard", "veo-3-1"];
 
 const TOOLS = [
@@ -24,12 +25,12 @@ const TOOLS = [
         model: {
           type: "string",
           enum: IMAGE_MODELS,
-          default: "nano-banana-pro",
-          description: "nano-banana-pro: best quality and character consistency. nano-banana-2: faster and cheaper. bytedance/seedream-v4-edit: edits that need reference images.",
+          default: "nano-banana-2",
+          description: "nano-banana-2: the default, good character consistency for fewer credits. nano-banana-pro: higher quality but costs more; use only if Betty asks. bytedance/seedream-v4-edit: edits that need reference images.",
         },
         reference_image_urls: { type: "array", items: { type: "string" }, description: "Optional public image links to use as references." },
-        aspect_ratio: { type: "string", description: "e.g. 9:16 for vertical micro dramas, 16:9, 1:1, or auto. Default 9:16." },
-        resolution: { type: "string", description: "Nano Banana only: 1K, 2K or 4K. Default 2K." },
+        aspect_ratio: { type: "string", description: "Default 9:16 (Betty's micro drama standard). Only change if Betty asks." },
+        resolution: { type: "string", description: "Nano Banana only: 1K, 2K or 4K. Default 1K, the cheapest, which covers a 720p vertical frame." },
       },
       required: ["prompt"],
     },
@@ -46,11 +47,11 @@ const TOOLS = [
         model: {
           type: "string",
           enum: VIDEO_MODELS,
-          default: "kling-2.6/image-to-video",
-          description: "kling-2.6/image-to-video: strong realistic motion (default). kling/v2-1-standard: cheaper. veo-3-1: Google Veo, can generate from text alone.",
+          default: "kling/v2-1-standard",
+          description: "kling/v2-1-standard: the default, 720p, the fewest credits for a good result. kling-2.6/image-to-video: stronger motion, costs more; use only if Betty asks. veo-3-1: Google Veo, can work from text alone, costs the most.",
         },
-        duration: { type: "string", enum: ["5", "10"], description: "Seconds, Kling only. Default 5." },
-        aspect_ratio: { type: "string", description: "Veo only: 9:16, 16:9 or auto. Default 9:16." },
+        duration: { type: "string", enum: ["5", "10"], description: "Seconds, Kling only. Default 5. Clips are never longer than 17 seconds." },
+        aspect_ratio: { type: "string", description: "Veo only. Default 9:16 (Betty's micro drama standard)." },
         sound: { type: "boolean", description: "Kling 2.6 only: generate audio. Doubles the price. Default false." },
       },
       required: ["prompt"],
@@ -85,7 +86,7 @@ const TOOLS = [
   {
     name: "create_task_advanced",
     description:
-      "For any other Kie.ai Market model not covered above: send the exact model name and input fields from the Kie.ai docs (docs.kie.ai). Returns a task_id for check_task. Uses Kie.ai credits.",
+      "For any other Kie.ai Market model not covered above: send the exact model name and input fields from the Kie.ai docs (docs.kie.ai). Follow Betty's rule: 9:16, 720p (or the lowest resolution at or above 720p), duration 17 seconds or less, cheapest mode and no audio unless asked. Returns a task_id for check_task. Uses Kie.ai credits.",
     inputSchema: {
       type: "object",
       properties: {
@@ -144,7 +145,7 @@ function startedMessage(data, model) {
 
 const handlers = {
   async create_image(env, a) {
-    const model = a.model || "nano-banana-pro";
+    const model = a.model || "nano-banana-2";
     if (!IMAGE_MODELS.includes(model)) throw new Error(`model must be one of: ${IMAGE_MODELS.join(", ")}`);
     const refs = a.reference_image_urls || [];
     let input;
@@ -156,7 +157,7 @@ const handlers = {
         prompt: a.prompt,
         image_input: refs,
         aspect_ratio: a.aspect_ratio || "9:16",
-        resolution: a.resolution || "2K",
+        resolution: a.resolution || "1K",
         output_format: "png",
       };
     }
@@ -164,7 +165,7 @@ const handlers = {
   },
 
   async create_video(env, a) {
-    const model = a.model || "kling-2.6/image-to-video";
+    const model = a.model || "kling/v2-1-standard";
     if (!VIDEO_MODELS.includes(model)) throw new Error(`model must be one of: ${VIDEO_MODELS.join(", ")}`);
     let input;
     if (model === "veo-3-1") {
@@ -235,6 +236,10 @@ const handlers = {
 
   async create_task_advanced(env, a) {
     if (!a.model || typeof a.input !== "object") throw new Error("model and input are required.");
+    const secs = Number(a.input.duration);
+    if (Number.isFinite(secs) && secs > MAX_CLIP_SECONDS) {
+      throw new Error(`Clips must be ${MAX_CLIP_SECONDS} seconds or shorter (Betty's micro drama rule).`);
+    }
     return startedMessage(await createTask(env, a.model, a.input), a.model);
   },
 };
@@ -259,7 +264,7 @@ async function handleRpc(msg, env) {
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
         instructions:
-          "Kie.ai image and video generation for Betty's micro dramas. Every create_* call spends Kie.ai credits, so confirm the shot list before generating many. Generation is asynchronous: start with create_image or create_video, then poll check_task. Results expire after 14 days.",
+          "Kie.ai image and video generation for Betty's micro dramas. Betty's standing rule: every clip is 9:16, 720p, 17 seconds or shorter, and made with the setting that gives the best result for the fewest credits. The defaults already follow this; only pick a pricier model, higher resolution or sound when Betty asks. Every create_* call spends credits, so confirm the shot list before generating many. Generation is asynchronous: start with create_image or create_video, then poll check_task. Results expire after 14 days.",
       });
     }
     case "ping":
