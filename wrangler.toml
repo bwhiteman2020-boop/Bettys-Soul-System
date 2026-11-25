@@ -7,3 +7,6 @@ compatibility_date = "2025-06-01"
 # Secrets (set in the Cloudflare dashboard, never in this file):
 #   KIE_API_KEY          your Kie.ai API key
 #   CONNECTOR_PASSWORD   a long made-up password that goes in the connector link
+
+# Lets Cloudflare build preview versions for pull requests.
+[previews]
